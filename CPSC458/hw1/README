@@ -1,0 +1,44 @@
+I started with the provided `player.py` code. The first thing I had to do was implement the `play` function similar to the CodeSkulptor implementation. To help with this, I modularized with a `deal` and `winner` function to do the initial dealing and determine the winner, respectively.
+
+## Initial strategy
+As a very barebones test, I found that the strategy of always standing, in 1,000,000 trials, had a winrate of **0.38338**.
+## Improved Baseline
+In order to get a baseline winrate, I implemented `hitme` as a simple threshold function: If the value of the player's hand was >=N, the player would stand. Otherwise, the player would hit. I ran this for 100,000 trials each. This yielded winrates of:
+
+ - N=1: **0.38303**
+ - N=2: **0.38411**
+ - N=3: **0.38434**
+ - N=4: **0.38326**
+ - N=5: **0.38348**
+ - N=6: **0.38468**
+ - N=7: **0.3825**
+ - N=8: **0.38665**
+ - N=9: **0.38824**
+ - N=10: **0.39134**
+ - N=11: **0.40152**
+ - N=12: **0.41484**
+ - N=13: **0.41947**
+ - N=14: **0.41939**
+ - N=15: **0.41602**
+ - N=16: **0.41567**
+ - N=17: **0.40907**
+ - N=18: **0.39656**
+ - N=19: **0.35983**
+ - N=20: **0.29191**
+ - N=21: **0.15807**
+
+These results confirm the intuition that particularly low thresholds have lower probabilities of winning because it'd essentially depend on the player's starting hand, but at some point, having too high a threshold has too high a chance of busting, leading to a sharp dropoff of win probability. What's important here, though, is that our final strategy should be demonstrably better than the naive strategy of hitting whenever the hand value is less than 13, and that this naive strategy works decently well.
+
+## Simulation
+The basic idea for my simulation implementation is simple: For each possible starting state, I simulate hitting and standing, each T times. When it comes to the actual playing trials, if hitting had a higher winrate in the simulations, then I hit. Otherwise I stand. If I've hit and didn't bust, then I choose whether or not to hit again based on the threshold value of 13 (based on the earlier discussion). As for what defines a starting state, since the player is making the decision, I only took into account the information they'd know: two of their own cards, and one of the dealer's cards. This makes my matrix have about `2*13*13*13=4394` entries.
+
+A minor implementation detail: I chose this approach to simulation, with a fixed number of trials per starting state, because I wanted to lower the number of times I had to rebuild the Deck. I just need to reshuffle a few cards back into the Deck at a time this way, as opposed to all 52 cards.
+
+I also wanted to collect statistics on how long it took to run the simulation, how long it took to play out the trials, and what the actual matrix was. This way, I'd be able to optimize the hyperparameters to ensure reasonable convergence in reasonable time.
+
+As a result, I found that for a fixed matrix, I could run 1,000,000 trials in **~20** seconds with the winrates within ~0.002 of each other (over multiple runs).
+Also, it took **~36** seconds to generate a matrix with 1000 trials per starting-state-decision, which also yielded winrates within ~0.002 of each other.
+
+Based on the data, then, I'd say my program achieves a winrate of **0.4284 +/- 0.004**, to be safe, which is in fact significantly better than the simple threshold strategy's <0.42 over many more trials.
+
+Addendum: I've since added the thresholding for cards 4+ into the simulation (so it more closely matches my actual strategy). This has raised simulation times to ~37 sec, but also my projected winrate to about **0.4305 +/- 0.004**.

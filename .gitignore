@@ -2,3 +2,5 @@
 .vscode
 .cpsc458venv
 .ipynb_checkpoints
+/CPSC458/data
+/CPSC458/project/images
